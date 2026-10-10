@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+ <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1"><meta name="theme-color" content="#14262b"><meta name="description" content="An original side-view survival adventure. Explore beautiful worlds, build a home, craft your way underground, and face the dragon."><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="FlatCraft">
+ <title>FlatCraft — A world of your own</title><link rel="icon" type="image/svg+xml" href="./icon.svg"><link rel="stylesheet" href="./style.css">
+</head>
+<body>
+ <canvas id="world" aria-label="FlatCraft game world"></canvas>
+ <div id="title-screen" class="screen">
+  <header class="title-header"><a class="brand" href="#" aria-label="FlatCraft home"><img src="./icon.svg" alt=""><span>FlatCraft</span></a><div class="header-links"><button data-action="guide" class="text-button">Field guide</button><button data-action="settings" class="icon-button" aria-label="Settings" data-svg="settings"></button></div></header>
+  <main class="title-main"><div class="eyebrow"><span class="tiny-star">✦</span> A WORLD OF YOUR OWN</div><h1>The world is<br>yours to make<span>.</span></h1><p class="intro">Find your path through a living, breathing wilderness.<br class="desktop"> One block. One discovery. One more adventure.</p><div class="title-actions"><button id="primary-play" class="button primary large" data-action="new"><span>Create a world</span><span data-svg="arrow"></span></button><button class="button secondary large" data-action="worlds"><span data-svg="world"></span>Your worlds</button></div><div id="continue-row" hidden><button id="continue-button" data-action="continue" class="continue-link"></button></div><div class="menu-controls"><span><kbd>A</kbd><kbd>D</kbd> Move</span><span><kbd>SPACE</kbd> Jump</span><span><kbd>E</kbd> Inventory</span></div></main>
+  <footer class="title-footer"><div class="landscape-caption"><span class="live-dot"></span> ENDLESS CURIOSITY. A NEW PERSPECTIVE.</div><span>FlatCraft · First Horizons <b>1.0</b></span></footer>
+ </div>
+ <div id="hud" hidden>
+  <div class="hud-top"><div class="status-panel"><div class="vitals-line"><div id="hearts" class="vitals"></div><div id="armor-status" class="armor-status"></div></div><div id="hunger" class="vitals hunger"></div><div id="oxygen" class="oxygen" hidden></div><div class="world-info"><span id="biome-label">Sunlit Forest</span><span class="dot-divider">·</span><span id="day-label">Day 1</span><span id="time-icon" data-svg="sun"></span></div></div><div class="hud-tools"><button class="icon-button" data-action="guide" aria-label="Field guide (G)" data-svg="book"></button><button class="icon-button" data-action="map" aria-label="World map (M)" data-svg="map"></button><button class="icon-button" data-action="pause" aria-label="Pause (Escape)" data-svg="pause"></button></div></div>
+  <div id="quest" class="quest-panel"><button id="quest-toggle" aria-label="Toggle journey details"><span class="quest-number">YOUR JOURNEY</span><span class="quest-chevron">⌃</span></button><strong id="quest-title"></strong><p id="quest-text"></p><div class="quest-progress"><i id="quest-fill"></i></div></div>
+  <div id="boss-bar" hidden><span>ENDER DRAGON</span><div><i></i></div><small id="boss-hint">Destroy the healing crystals</small></div>
+  <div id="target-label"></div><div id="effects"></div><div id="save-indicator" aria-live="polite"></div>
+  <div class="hotbar-wrap"><div id="held-name"></div><div class="xp-line"><span id="xp-level">0</span><div><i id="xp-fill"></i></div></div><div id="hotbar" class="hotbar"></div><div class="game-hints"><span>Hold click <b>Mine / attack</b></span><span>Right click / F <b>Use / place</b></span><span>E <b>Inventory</b></span></div></div>
+  <div id="touch-controls"><div class="touch-move"><button data-touch="left" aria-label="Move left">‹</button><button data-touch="right" aria-label="Move right">›</button><button data-touch="down" aria-label="Sneak or descend" class="touch-small">↓</button></div><div class="touch-actions"><button data-touch="jump" aria-label="Jump" class="touch-jump">↑</button><button data-touch="mine" aria-label="Mine or attack" data-svg="pickaxe"></button><button data-touch="use" aria-label="Use or place" data-svg="hand"></button><button data-action="inventory" aria-label="Open inventory" data-svg="pack"></button></div><div class="touch-aim-hint">Tap the world to aim</div></div>
+ </div>
+ <div id="modal-backdrop" hidden><section id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"></section></div>
+ <div id="toast-stack" aria-live="polite"></div><div id="achievement" hidden><div class="achievement-icon" data-svg="sparkle"></div><div><span>JOURNEY MILESTONE</span><strong></strong></div></div><div id="tooltip" hidden></div><div id="cursor-item" hidden></div>
+ <input type="file" id="import-file" accept=".json,application/json" hidden>
+ <div id="loading"><img src="./icon.svg" alt=""><strong>FlatCraft</strong><span>Growing a little possibility…</span></div>
+ <noscript><div class="no-script">FlatCraft needs JavaScript enabled to play.</div></noscript>
+ <script type="module" src="./src/main.js"></script>
+</body></html>
