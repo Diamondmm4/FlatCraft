@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1"><meta name="theme-color" content="#14262b"><meta name="description" content="An original side-view survival adventure. Explore beautiful worlds, build a home, craft your way underground, and face the dragon."><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="FlatCraft">
- <title>FlatCraft — A world of your own</title><link rel="icon" type="image/svg+xml" href="./icon.svg"><link rel="stylesheet" href="./style.css"><link rel="stylesheet" href="./shop.css"><link rel="stylesheet" href="./shop-layout-fix.css">
+ <title>FlatCraft — A world of your own</title><link rel="icon" type="image/svg+xml" href="./icon.svg"><link rel="stylesheet" href="./style.css"><link rel="stylesheet" href="./shop.css"><link rel="stylesheet" href="./shop-layout-fix.css?v=20261011-4"><style>.header-links [data-flatcraft-shop]{display:none!important}</style>
 </head>
 <body>
  <canvas id="world" aria-label="FlatCraft game world"></canvas>
@@ -24,5 +24,6 @@
  <input type="file" id="import-file" accept=".json,application/json" hidden>
  <div id="loading"><img src="./icon.svg" alt=""><strong>FlatCraft</strong><span>Growing a little possibility…</span></div>
  <noscript><div class="no-script">FlatCraft needs JavaScript enabled to play.</div></noscript>
- <script type="module" src="./src/main.js"></script><script type="module" src="./src/shop-loader.js"></script>
+ <script>(()=>{const clean=()=>document.querySelectorAll('.header-links [data-flatcraft-shop]').forEach(el=>el.remove());clean();new MutationObserver(clean).observe(document.documentElement,{childList:true,subtree:true});})();</script>
+ <script type="module" src="./src/main.js"></script><script type="module" src="./src/shop-loader.js?v=20261011-4"></script>
 </body></html>
