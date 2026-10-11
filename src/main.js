@@ -1,6 +1,7 @@
 import {Game} from './game.js';
 import {World} from './world.js';
 import {B,ITEMS} from './data.js';
+import './passable-leaves.js?v=20261011-1';
 import {Renderer} from './render.js';
 import {UI} from './ui.js';
 import {Saves} from './storage.js';
