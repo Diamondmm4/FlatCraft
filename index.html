@@ -12,7 +12,7 @@
   <footer class="title-footer"><div class="landscape-caption"><span class="live-dot"></span> ENDLESS CURIOSITY. A NEW PERSPECTIVE.</div><span>FlatCraft · First Horizons <b>1.0</b></span></footer>
  </div>
  <div id="hud" hidden>
-  <div class="hud-top"><div class="status-panel"><div class="vitals-line"><div id="hearts" class="vitals"></div><div id="armor-status" class="armor-status"></div></div><div id="hunger" class="vitals hunger"></div><div id="oxygen" class="oxygen" hidden></div><div class="world-info"><span id="biome-label">Sunlit Forest</span><span class="dot-divider">·</span><span id="day-label">Day 1</span><span id="time-icon" data-svg="sun"></span></div></div><div class="hud-tools"><button class="icon-button" data-action="guide" aria-label="Field guide (G)" data-svg="book"></button><button class="icon-button" data-action="map" aria-label="World map (M)" data-svg="map"></button><button class="icon-button" data-action="pause" aria-label="Pause (Escape)" data-svg="pause"></button></div></div>
+  <div class="hud-top"><div class="status-panel"><div class="vitals-line"><div id="hearts" class="vitals"></div><div id="armor-status" class="armor-status"></div></div><div id="hunger" class="vitals hunger"></div><div id="oxygen" class="oxygen" hidden></div><div class="world-info"><span id="biome-label">Sunlit Forest</span><span class="dot-divider">·</span><span id="day-label">Day 1</span><span id="time-icon" data-svg="sun"></span></div></div><div class="hud-tools"><button class="icon-button" data-action="guide" aria-label="Field guide (G)" data-svg="book"></button><button class="icon-button" data-action="map" aria-label="World map (M)" data-svg="map"></button><button data-action="pause" class="icon-button" aria-label="Pause (Escape)" data-svg="pause"></button></div></div>
   <div id="quest" class="quest-panel"><button id="quest-toggle" aria-label="Toggle journey details"><span class="quest-number">YOUR JOURNEY</span><span class="quest-chevron">⌃</span></button><strong id="quest-title"></strong><p id="quest-text"></p><div class="quest-progress"><i id="quest-fill"></i></div></div>
   <div id="boss-bar" hidden><span>ENDER DRAGON</span><div><i></i></div><small id="boss-hint">Destroy the healing crystals</small></div>
   <div id="target-label"></div><div id="effects"></div><div id="save-indicator" aria-live="polite"></div>
@@ -25,5 +25,6 @@
  <div id="loading"><img src="./icon.svg" alt=""><strong>FlatCraft</strong><span>Growing a little possibility…</span></div>
  <noscript><div class="no-script">FlatCraft needs JavaScript enabled to play.</div></noscript>
  <script>(()=>{const clean=()=>document.querySelectorAll('.header-links [data-flatcraft-shop]').forEach(el=>el.remove());clean();new MutationObserver(clean).observe(document.documentElement,{childList:true,subtree:true});})();</script>
- <script type="module" src="./src/bootstrap.js?v=20261011-4"></script>
+ <script>(()=>{const fixGuideLabel=()=>document.querySelectorAll('#modal h3').forEach(h=>{if(h.textContent.trim()==='A MacBook tip')h.textContent='No Mouse Tip';});fixGuideLabel();new MutationObserver(fixGuideLabel).observe(document.getElementById('modal'),{childList:true,subtree:true});})();</script>
+ <script type="module" src="./src/bootstrap.js?v=20261011-5"></script>
 </body></html>
