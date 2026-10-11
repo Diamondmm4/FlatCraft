@@ -1,5 +1,3 @@
-import {Renderer} from './render.js';
-
 const DEFAULTS={
  hair:{color:'#4b3428',shape:'crop'},
  skin:{color:'#c68a62'},
@@ -55,10 +53,10 @@ function drawHair(c,hair){
  c.fillRect(-4,-2,8,3);c.fillRect(-5,0,2,3);
 }
 
-const proto=Renderer.prototype;
-if(!proto.__cosmeticsDrawPlayerInstalled){
- proto.__cosmeticsDrawPlayerInstalled=true;
- proto.drawPlayer=function(g){
+export function installPlayerCosmetics(renderer){
+ if(!renderer||renderer.__cosmeticsDrawPlayerInstalled)return !!renderer;
+ renderer.__cosmeticsDrawPlayerInstalled=true;
+ renderer.drawPlayer=function(g){
   const c=this.ctx,p=g.player,s=this.tile,pt=this.screenPoint(p.x,p.y),walk=p.grounded?Math.sin(p.walk*3.7)*.28:Math.sin(g.elapsed*2)*.07,look=getLook();
   const skin=look.skin.color||DEFAULTS.skin.color,shirt=look.shirt.color||DEFAULTS.shirt.color,shirt2=look.shirt.accent||shade(shirt,-.18),pants=look.pants.color||DEFAULTS.pants.color,pants2=look.pants.accent||shade(pants,-.18);
   c.save();c.translate(pt.x,pt.y);if(p.invuln>0&&Math.floor(g.elapsed*14)%2)c.globalAlpha=.6;const u=s/16;c.scale(p.facing*u,u);c.imageSmoothingEnabled=false;
@@ -73,4 +71,6 @@ if(!proto.__cosmeticsDrawPlayerInstalled){
   if(p.blocking){c.fillStyle='#977757';c.fillRect(4,9,5,10);c.fillStyle='#bcc8bf';c.fillRect(5,9,1,10);}
   c.restore();
  };
+ window.FlatCraftCosmeticsRendererInstalled=true;
+ return true;
 }
