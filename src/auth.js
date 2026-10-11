@@ -47,7 +47,7 @@ function formHtml(){
  return `
   <div class="account-eyebrow">FLATCRAFT ACCOUNT</div>
   <h2 id="account-title">${signingIn?'Welcome back':'Create your account'}</h2>
-  <p class="account-subtext">${signingIn?'Sign in to your FlatCraft account.':'Create an account now; cloud saves will be connected next.'}</p>
+  <p class="account-subtext">${signingIn?'Sign in to access the worlds saved under this account.':'Create an account now; cloud syncing will be connected next.'}</p>
   <div class="account-tabs" role="tablist">
    <button type="button" data-auth-action="mode" data-mode="signin" class="${signingIn?'active':''}">Sign in</button>
    <button type="button" data-auth-action="mode" data-mode="signup" class="${!signingIn?'active':''}">Create account</button>
@@ -59,7 +59,7 @@ function formHtml(){
   </form>
   <button class="account-secondary" type="button" data-auth-action="resend">Resend confirmation email</button>
   <div id="auth-message" class="account-message" aria-live="polite"></div>
-  <div class="account-guest"><strong>Guest mode stays available.</strong><span>Your current browser worlds and cosmetics will not be deleted.</span></div>`;
+  <div class="account-guest"><strong>Guest mode stays separate.</strong><span>Worlds created while signed out are kept in the guest profile on this browser.</span></div>`;
 }
 
 function signedInHtml(){
@@ -67,11 +67,11 @@ function signedInHtml(){
  return `
   <div class="account-eyebrow">FLATCRAFT ACCOUNT</div>
   <h2 id="account-title">You’re signed in</h2>
-  <p class="account-subtext">Your account is connected. Cloud syncing is the next step.</p>
+  <p class="account-subtext">Worlds on this browser are now separated by account. Cloud syncing is the next step.</p>
   <div class="account-profile"><span>Email</span><strong>${email}</strong></div>
   <button class="account-secondary" type="button" data-auth-action="signout">Sign out</button>
   <div id="auth-message" class="account-message" aria-live="polite"></div>
-  <div class="account-guest"><strong>Local saves are still safe.</strong><span>Signing out does not erase worlds stored in this browser.</span></div>`;
+  <div class="account-guest"><strong>Your worlds stay attached to this account.</strong><span>Signing out hides them without deleting them.</span></div>`;
 }
 
 function render(){
@@ -93,10 +93,12 @@ async function submit(e){
   if(mode==='signin'){
    const {error}=await supabase.auth.signInWithPassword({email,password});
    if(error)throw error;
+   location.reload();return;
   }else{
    const {data,error}=await supabase.auth.signUp({email,password,options:{emailRedirectTo:authRedirect()}});
    if(error)throw error;
    if(!data.session){message('Account created. Check your email to confirm it. If the link expired, use Resend confirmation email below.','success');return;}
+   location.reload();return;
   }
  }catch(err){message(err?.message||'Something went wrong. Please try again.','error');}
  finally{button.disabled=false;button.textContent=mode==='signin'?'Sign in':'Create account';}
@@ -124,7 +126,10 @@ async function click(e){
  }
  if(el.dataset.authAction==='resend'){await resendConfirmation(el);return;}
  if(el.dataset.authAction==='signout'){
-  el.disabled=true;const {error}=await supabase.auth.signOut();if(error){el.disabled=false;message(error.message,'error');}
+  el.disabled=true;
+  const {error}=await supabase.auth.signOut();
+  if(error){el.disabled=false;message(error.message,'error');return;}
+  location.reload();
  }
 }
 
