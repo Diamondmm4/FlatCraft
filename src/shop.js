@@ -40,7 +40,7 @@ const CATALOG={
   {id:'shirt_harvest',name:'Harvest Knit',price:550,color:'#b5854f',accent:'#6e553d'},
   {id:'shirt_ridge',name:'Ridge Jacket',price:600,color:'#5c6f69',accent:'#2f4542'},
   {id:'shirt_cloudline',name:'Cloudline',price:700,color:'#c5c6bd',accent:'#788a91'},
-  {id:'shirt_founder',name:'Founder's Coat',price:800,color:'#263f3d',accent:'#d2ae6d'}
+  {id:'shirt_founder',name:"Founder's Coat",price:800,color:'#263f3d',accent:'#d2ae6d'}
  ],
  pants:[
   {id:'pants_blue_jeans',name:'Blue Jeans',price:0,color:'#4c6577',accent:'#344957'},
@@ -69,7 +69,6 @@ const all=()=>Object.values(CATALOG).flat();
 const item=id=>all().find(x=>x.id===id);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const tokenIcon='<span class="flat-token" aria-hidden="true">F</span>';
-
 function injectButton(){const links=document.querySelector('.header-links');if(!links||links.querySelector('[data-flatcraft-shop]'))return;const b=document.createElement('button');b.className='text-button shop-link';b.dataset.flatcraftShop='';b.innerHTML=`${tokenIcon}<span>Cosmetics</span>`;links.prepend(b);}
 function ensureOverlay(){if(document.getElementById('cosmetic-shop'))return;const wrap=document.createElement('div');wrap.id='cosmetic-shop';wrap.hidden=true;wrap.innerHTML='<div class="shop-shell" role="dialog" aria-modal="true" aria-labelledby="shop-title"></div>';document.body.append(wrap);}
 function drawAvatar(){const s=item(preview.skin),h=item(preview.hair),t=item(preview.shirt),p=item(preview.pants);return `<div class="avatar-stage"><div class="avatar-shadow"></div><div class="avatar-pixel"><div class="px-hair hair-${h?.shape||'crop'}" style="--hair:${h?.color||'#4b3428'}"></div><div class="px-head" style="--skin:${s?.color||'#c68a62'}"><i></i><b></b></div><div class="px-body" style="--shirt:${t?.color||'#55715a'};--shirt2:${t?.accent||'#3f5948'}"></div><div class="px-arm left" style="--skin:${s?.color||'#c68a62'};--shirt:${t?.color||'#55715a'}"></div><div class="px-arm right" style="--skin:${s?.color||'#c68a62'};--shirt:${t?.color||'#55715a'}"></div><div class="px-leg left" style="--pants:${p?.color||'#4c6577'};--pants2:${p?.accent||'#344957'}"></div><div class="px-leg right" style="--pants:${p?.color||'#4c6577'};--pants2:${p?.accent||'#344957'}"></div></div><div class="preview-label">YOUR LOOK <strong>${esc(h?.name||'')} · ${esc(t?.name||'')}</strong></div></div>`;}
@@ -81,16 +80,8 @@ function close(){const el=document.getElementById('cosmetic-shop');if(el)el.hidd
 function select(id){const x=item(id);if(!x)return;const cat=Object.keys(CATALOG).find(k=>CATALOG[k].some(v=>v.id===id));if(!cat)return;category=cat;preview[cat]=id;render();}
 function buy(){const x=item(preview[category]);if(!x||state.owned.includes(x.id))return;if(x.price>state.tokens)return;state.tokens-=x.price;state.owned.push(x.id);state.equipped[category]=x.id;preview[category]=x.id;save();render();}
 function equip(){const x=item(preview[category]);if(!x)return;if(x.price===0&&!state.owned.includes(x.id))state.owned.push(x.id);if(!state.owned.includes(x.id))return;state.equipped[category]=x.id;save();render();}
-
-document.addEventListener('click',e=>{
- if(e.target.closest('[data-flatcraft-shop]')){open();return;}
- const cat=e.target.closest('[data-shop-category]');if(cat){category=cat.dataset.shopCategory;render();return;}
- const c=e.target.closest('[data-cosmetic-id]');if(c){select(c.dataset.cosmeticId);return;}
- const a=e.target.closest('[data-shop-action]')?.dataset.shopAction;if(a==='close')close();else if(a==='buy')buy();else if(a==='equip')equip();
- if(e.target.id==='cosmetic-shop')close();
-});
+document.addEventListener('click',e=>{if(e.target.closest('[data-flatcraft-shop]')){open();return;}const cat=e.target.closest('[data-shop-category]');if(cat){category=cat.dataset.shopCategory;render();return;}const c=e.target.closest('[data-cosmetic-id]');if(c){select(c.dataset.cosmeticId);return;}const a=e.target.closest('[data-shop-action]')?.dataset.shopAction;if(a==='close')close();else if(a==='buy')buy();else if(a==='equip')equip();if(e.target.id==='cosmetic-shop')close();});
 window.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.getElementById('cosmetic-shop')?.hidden)close();});
 injectButton();ensureOverlay();
-
 export const Cosmetics={catalog:CATALOG,get state(){return JSON.parse(JSON.stringify(state));},get equipped(){return {...state.equipped};},open,close,addTokens(amount){if(Number.isFinite(amount)){state.tokens=Math.max(0,Math.floor(state.tokens+amount));save();if(!document.getElementById('cosmetic-shop')?.hidden)render();}},resetPreview(){localStorage.removeItem(KEY);state=load();preview={...state.equipped};save();render();}};
 window.FlatCraftCosmetics=Cosmetics;
