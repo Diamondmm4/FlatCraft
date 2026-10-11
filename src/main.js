@@ -5,7 +5,9 @@ import {Renderer} from './render.js';
 import {UI} from './ui.js';
 import {Saves} from './storage.js';
 import {AudioEngine} from './audio.js';
+import {installPlayerCosmetics} from './player-cosmetics.js?v=20261011-4';
 const canvas=document.getElementById('world'),renderer=new Renderer(canvas),audio=new AudioEngine(),saves=new Saves();
+installPlayerCosmetics(renderer);
 const input={left:false,right:false,up:false,down:false,jump:false,sprint:false,mine:false,use:false},keys=new Set();let ui,game,last=performance.now(),accumulator=0,demo,mouse={x:innerWidth*.6,y:innerHeight*.5},lastSpace=0;
 function clearInput(){keys.clear();for(const k of Object.keys(input))if(typeof input[k]==='boolean')input[k]=false;document.querySelectorAll('[data-touch].active').forEach(e=>e.classList.remove('active'));}
 function event(type,data){
