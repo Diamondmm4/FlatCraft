@@ -1,7 +1,7 @@
 import {Game} from './game.js';
 
-// Passive animals should hop simple one-block rises, but should not repeatedly
-// jump into walls they cannot clear. Keep this behavior scoped to passive mobs
+// Passive animals should hop simple one-block rises, but immediately turn away
+// from anything they cannot clear. Keep this scoped to passive, non-flying mobs
 // so hostile movement/combat physics remain unchanged.
 const originalMove=Game.prototype.move;
 
@@ -16,47 +16,50 @@ function bodyClear(world,centerX,top,bottom,width){
  return true;
 }
 
+function reverseAnimal(entity,dir){
+ entity.vy=Math.max(0,entity.vy);
+ entity.dir=-dir;
+ entity.facing=-dir;
+ entity.vx=-dir*Math.max(entity.speed*.9,.75);
+ // Keep the new direction long enough that the animal cleanly leaves the wall
+ // instead of immediately choosing the blocked direction again.
+ entity.timer=2.5+Math.random()*2;
+ entity._wallTurn=.45;
+}
+
 Game.prototype.move=function(entity,dt,isPlayer=false){
  if(!isPlayer&&entity?.passive&&!entity.flying&&entity.grounded){
   const world=this.world;
   const dir=Math.sign(entity.dir||entity.vx||entity.facing||1);
-  const moving=dir!==0&&Math.abs(entity.vx)>.05;
+  const moving=dir!==0&&Math.abs(entity.vx)>.03;
 
   if(entity._wallTurn>0)entity._wallTurn=Math.max(0,entity._wallTurn-dt);
 
   if(moving){
-   // Look just beyond the animal's leading edge at roughly ankle/foot height.
-   const aheadX=entity.x+dir*(entity.w/2+.18);
-   const footRow=Math.floor(entity.y+entity.h-.14);
-   const obstacle=world.solid(aheadX,footRow);
+   // Probe slightly before the leading edge reaches the obstacle so animals
+   // decide what to do before visibly stalling against a wall.
+   const nearX=entity.x+dir*(entity.w/2+.22);
+   const farX=entity.x+dir*(entity.w/2+.48);
+   const footRow=Math.floor(entity.y+entity.h-.12);
+   const obstacle=world.solid(nearX,footRow)||world.solid(farX,footRow);
 
    if(obstacle){
-    // Standing on top of this obstacle raises the animal by exactly one block.
-    const targetBottom=footRow-.01;
-    const targetTop=targetBottom-entity.h;
-    const targetCenterX=entity.x+dir*Math.max(.3,entity.w*.45);
-    const landingSpaceClear=bodyClear(world,targetCenterX,targetTop,targetBottom,entity.w);
-
-    // Also check the upward part of the jump at the animal's current position.
-    // This catches a low roof/overhang even when the ledge itself is only 1 high.
-    const upwardSpaceClear=bodyClear(world,entity.x,entity.y-1,entity.y+entity.h-1,entity.w);
-    const climbable=landingSpaceClear&&upwardSpaceClear;
+    // A valid one-block step means the animal's whole body can fit exactly one
+    // block higher, both during takeoff and a little forward over the ledge.
+    // Any 2+ block wall automatically fails this test because the second block
+    // occupies the elevated body space. Low ceilings/overhangs fail it too.
+    const raisedTop=entity.y-1;
+    const raisedBottom=entity.y+entity.h-1;
+    const takeoffClear=bodyClear(world,entity.x,raisedTop,raisedBottom,entity.w);
+    const landingX=entity.x+dir*Math.max(.42,entity.w*.55);
+    const landingClear=bodyClear(world,landingX,raisedTop,raisedBottom,entity.w);
+    const climbable=takeoffClear&&landingClear;
 
     if(climbable){
-     // Preserve the normal walking direction and give a controlled hop. The
-     // base mob code may already have started a jump; Math.min avoids stacking
-     // extra impulses while guaranteeing enough lift for a one-block rise.
      entity.vy=Math.min(entity.vy,-8);
-     entity.vx=dir*Math.max(Math.abs(entity.vx),entity.speed*.85);
+     entity.vx=dir*Math.max(Math.abs(entity.vx),entity.speed*.9);
     }else if(!entity._wallTurn){
-     // Two-block walls and low-ceiling ledges are impossible: cancel any jump
-     // that the generic mob logic just requested and naturally walk away.
-     entity.vy=Math.max(0,entity.vy);
-     entity.dir=-dir;
-     entity.facing=-dir;
-     entity.vx=-dir*Math.max(entity.speed*.75,.65);
-     entity.timer=2+Math.random()*2;
-     entity._wallTurn=.75;
+     reverseAnimal(entity,dir);
     }
    }
   }
