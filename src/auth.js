@@ -9,6 +9,7 @@ const supabase=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{
 let session=null;
 let mode='signin';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const authRedirect=()=>location.origin+location.pathname;
 
 function ensureOverlay(){
  if(document.getElementById('account-overlay'))return;
@@ -31,7 +32,7 @@ function ensureOverlay(){
 function accountButton(){return document.querySelector('[data-flatcraft-account]');}
 function updateButton(){
  const btn=accountButton();if(!btn)return;
- btn.textContent=session?.user?.email?'Account':'Account';
+ btn.textContent='Account';
  btn.classList.toggle('signed-in',!!session);
  btn.title=session?.user?.email?`Signed in as ${session.user.email}`:'Sign in or create an account';
 }
@@ -56,6 +57,7 @@ function formHtml(){
    <label><span>Password</span><input id="auth-password" type="password" autocomplete="${signingIn?'current-password':'new-password'}" minlength="8" required placeholder="At least 8 characters"></label>
    <button class="account-primary" type="submit">${signingIn?'Sign in':'Create account'}</button>
   </form>
+  <button class="account-secondary" type="button" data-auth-action="resend">Resend confirmation email</button>
   <div id="auth-message" class="account-message" aria-live="polite"></div>
   <div class="account-guest"><strong>Guest mode stays available.</strong><span>Your current browser worlds and cosmetics will not be deleted.</span></div>`;
 }
@@ -92,13 +94,25 @@ async function submit(e){
    const {error}=await supabase.auth.signInWithPassword({email,password});
    if(error)throw error;
   }else{
-   const redirectTo=location.origin+location.pathname;
-   const {data,error}=await supabase.auth.signUp({email,password,options:{emailRedirectTo:redirectTo}});
+   const {data,error}=await supabase.auth.signUp({email,password,options:{emailRedirectTo:authRedirect()}});
    if(error)throw error;
-   if(!data.session){message('Account created. Check your email to confirm it, then come back and sign in.','success');return;}
+   if(!data.session){message('Account created. Check your email to confirm it. If the link expired, use Resend confirmation email below.','success');return;}
   }
  }catch(err){message(err?.message||'Something went wrong. Please try again.','error');}
  finally{button.disabled=false;button.textContent=mode==='signin'?'Sign in':'Create account';}
+}
+
+async function resendConfirmation(button){
+ const input=document.getElementById('auth-email');
+ const email=input?.value.trim();
+ if(!email){message('Enter the email address you used to create the account first.','error');input?.focus();return;}
+ button.disabled=true;const old=button.textContent;button.textContent='Sending…';message('');
+ try{
+  const {error}=await supabase.auth.resend({type:'signup',email,options:{emailRedirectTo:authRedirect()}});
+  if(error)throw error;
+  message('Confirmation email sent. Use the newest email and click its confirmation link.','success');
+ }catch(err){message(err?.message||'Could not resend the confirmation email. Please try again.','error');}
+ finally{button.disabled=false;button.textContent=old;}
 }
 
 async function click(e){
@@ -108,6 +122,7 @@ async function click(e){
  if(el.dataset.authAction==='mode'){
   mode=el.dataset.mode==='signup'?'signup':'signin';render();return;
  }
+ if(el.dataset.authAction==='resend'){await resendConfirmation(el);return;}
  if(el.dataset.authAction==='signout'){
   el.disabled=true;const {error}=await supabase.auth.signOut();if(error){el.disabled=false;message(error.message,'error');}
  }
