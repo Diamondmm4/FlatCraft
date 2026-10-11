@@ -8,7 +8,8 @@ const supabase=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{
 
 let session=null;
 let mode='signin';
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let recoveryMode=false;
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
 const authRedirect=()=>location.origin+location.pathname;
 
 function ensureOverlay(){
@@ -21,9 +22,7 @@ function ensureOverlay(){
    </section>
   </div>`);
  const overlay=document.getElementById('account-overlay');
- overlay.addEventListener('click',e=>{
-  if(e.target===overlay||e.target.closest('[data-auth-action="close"]'))close();
- });
+ overlay.addEventListener('click',e=>{if(e.target===overlay||e.target.closest('[data-auth-action="close"]'))close();});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!overlay.hidden)close();});
  document.addEventListener('submit',submit);
  document.addEventListener('click',click);
@@ -36,11 +35,21 @@ function updateButton(){
  btn.classList.toggle('signed-in',!!session);
  btn.title=session?.user?.email?`Signed in as ${session.user.email}`:'Sign in or create an account';
 }
-
 function message(text,type='info'){
  const el=document.getElementById('auth-message');
  if(!el)return;el.textContent=text||'';el.dataset.type=type;
 }
+
+function recoveryHtml(){return `
+ <div class="account-eyebrow">FLATCRAFT ACCOUNT</div>
+ <h2 id="account-title">Choose a new password</h2>
+ <p class="account-subtext">Enter a new password for your FlatCraft account.</p>
+ <form id="password-update-form" autocomplete="on">
+  <label><span>New password</span><input id="new-password" type="password" autocomplete="new-password" minlength="8" required placeholder="At least 8 characters"></label>
+  <label><span>Confirm password</span><input id="confirm-password" type="password" autocomplete="new-password" minlength="8" required placeholder="Type it again"></label>
+  <button class="account-primary" type="submit">Update password</button>
+ </form>
+ <div id="auth-message" class="account-message" aria-live="polite"></div>`;}
 
 function formHtml(){
  const signingIn=mode==='signin';
@@ -55,6 +64,7 @@ function formHtml(){
   <form id="auth-form" autocomplete="on">
    <label><span>Email</span><input id="auth-email" type="email" autocomplete="email" required placeholder="you@example.com"></label>
    <label><span>Password</span><input id="auth-password" type="password" autocomplete="${signingIn?'current-password':'new-password'}" minlength="8" required placeholder="At least 8 characters"></label>
+   ${signingIn?'<button class="account-link" type="button" data-auth-action="forgot">Forgot password?</button>':''}
    <button class="account-primary" type="submit">${signingIn?'Sign in':'Create account'}</button>
   </form>
   <button class="account-secondary" type="button" data-auth-action="resend">Resend confirmation email</button>
@@ -76,13 +86,30 @@ function signedInHtml(){
 
 function render(){
  ensureOverlay();
- document.getElementById('account-content').innerHTML=session?signedInHtml():formHtml();
- setTimeout(()=>document.getElementById(session?'account-title':'auth-email')?.focus?.(),0);
+ document.getElementById('account-content').innerHTML=recoveryMode?recoveryHtml():session?signedInHtml():formHtml();
+ setTimeout(()=>document.getElementById(recoveryMode?'new-password':session?'account-title':'auth-email')?.focus?.(),0);
 }
 function open(){ensureOverlay();render();document.getElementById('account-overlay').hidden=false;}
-function close(){const o=document.getElementById('account-overlay');if(o)o.hidden=true;}
+function close(){const o=document.getElementById('account-overlay');if(o&&!recoveryMode)o.hidden=true;}
 
 async function submit(e){
+ if(e.target.id==='password-update-form'){
+  e.preventDefault();
+  const password=document.getElementById('new-password').value;
+  const confirm=document.getElementById('confirm-password').value;
+  const button=e.target.querySelector('button[type="submit"]');
+  if(password!==confirm){message('The two passwords do not match.','error');return;}
+  button.disabled=true;button.textContent='Updating…';message('');
+  try{
+   const {error}=await supabase.auth.updateUser({password});
+   if(error)throw error;
+   recoveryMode=false;
+   history.replaceState({},document.title,location.pathname+location.search);
+   render();message('Password updated successfully.','success');
+  }catch(err){message(err?.message||'Could not update your password. Please try again.','error');}
+  finally{button.disabled=false;button.textContent='Update password';}
+  return;
+ }
  if(e.target.id!=='auth-form')return;
  e.preventDefault();
  const email=document.getElementById('auth-email').value.trim();
@@ -94,19 +121,17 @@ async function submit(e){
    const {error}=await supabase.auth.signInWithPassword({email,password});
    if(error)throw error;
    location.reload();return;
-  }else{
-   const {data,error}=await supabase.auth.signUp({email,password,options:{emailRedirectTo:authRedirect()}});
-   if(error)throw error;
-   if(!data.session){message('Account created. Check your email to confirm it. If the link expired, use Resend confirmation email below.','success');return;}
-   location.reload();return;
   }
+  const {data,error}=await supabase.auth.signUp({email,password,options:{emailRedirectTo:authRedirect()}});
+  if(error)throw error;
+  if(!data.session){message('Account created. Check your email to confirm it. If the link expired, use Resend confirmation email below.','success');return;}
+  location.reload();return;
  }catch(err){message(err?.message||'Something went wrong. Please try again.','error');}
  finally{button.disabled=false;button.textContent=mode==='signin'?'Sign in':'Create account';}
 }
 
 async function resendConfirmation(button){
- const input=document.getElementById('auth-email');
- const email=input?.value.trim();
+ const input=document.getElementById('auth-email'),email=input?.value.trim();
  if(!email){message('Enter the email address you used to create the account first.','error');input?.focus();return;}
  button.disabled=true;const old=button.textContent;button.textContent='Sending…';message('');
  try{
@@ -117,19 +142,27 @@ async function resendConfirmation(button){
  finally{button.disabled=false;button.textContent=old;}
 }
 
+async function forgotPassword(button){
+ const input=document.getElementById('auth-email'),email=input?.value.trim();
+ if(!email){message('Enter your account email first.','error');input?.focus();return;}
+ button.disabled=true;const old=button.textContent;button.textContent='Sending reset email…';message('');
+ try{
+  const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:authRedirect()});
+  if(error)throw error;
+  message('Password reset email sent. Open the newest email and follow the link.','success');
+ }catch(err){message(err?.message||'Could not send the password reset email. Please try again.','error');}
+ finally{button.disabled=false;button.textContent=old;}
+}
+
 async function click(e){
- const account=e.target.closest('[data-flatcraft-account]');
- if(account){open();return;}
+ const account=e.target.closest('[data-flatcraft-account]');if(account){open();return;}
  const el=e.target.closest('[data-auth-action]');if(!el)return;
- if(el.dataset.authAction==='mode'){
-  mode=el.dataset.mode==='signup'?'signup':'signin';render();return;
- }
+ if(el.dataset.authAction==='mode'){mode=el.dataset.mode==='signup'?'signup':'signin';render();return;}
+ if(el.dataset.authAction==='forgot'){await forgotPassword(el);return;}
  if(el.dataset.authAction==='resend'){await resendConfirmation(el);return;}
  if(el.dataset.authAction==='signout'){
-  el.disabled=true;
-  const {error}=await supabase.auth.signOut();
-  if(error){el.disabled=false;message(error.message,'error');return;}
-  location.reload();
+  el.disabled=true;const {error}=await supabase.auth.signOut();
+  if(error){el.disabled=false;message(error.message,'error');return;}location.reload();
  }
 }
 
@@ -137,17 +170,14 @@ ensureOverlay();
 const {data:{session:initialSession}}=await supabase.auth.getSession();
 session=initialSession;
 updateButton();
-supabase.auth.onAuthStateChange((_event,nextSession)=>{
+supabase.auth.onAuthStateChange((event,nextSession)=>{
  session=nextSession;updateButton();
+ if(event==='PASSWORD_RECOVERY'){
+  recoveryMode=true;open();
+ }
  const overlay=document.getElementById('account-overlay');
- if(overlay&&!overlay.hidden)render();
+ if(overlay&&!overlay.hidden&&!recoveryMode)render();
  window.dispatchEvent(new CustomEvent('flatcraft-auth-change',{detail:{session,user:session?.user||null}}));
 });
 
-window.FlatCraftAuth={
- supabase,
- get session(){return session;},
- get user(){return session?.user||null;},
- open,
- close
-};
+window.FlatCraftAuth={supabase,get session(){return session;},get user(){return session?.user||null;},open,close};
