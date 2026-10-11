@@ -5,7 +5,7 @@ import './passable-leaves.js?v=20261011-1';
 import {Renderer} from './render.js';
 import {UI} from './ui.js';
 import './inventory-fixes.js?v=20261011-1';
-import {Saves} from './storage.js';
+import {Saves} from './storage.js?v=20261011-2';
 import {AudioEngine} from './audio.js';
 import {installPlayerCosmetics} from './player-cosmetics.js?v=20261011-4';
 const canvas=document.getElementById('world'),renderer=new Renderer(canvas),audio=new AudioEngine(),saves=new Saves();
