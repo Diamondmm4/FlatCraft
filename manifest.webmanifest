@@ -10,10 +10,10 @@
   "theme_color": "#14262b",
   "icons": [
     {
-      "src": "./flatcraft-icon-v2.png?v=20261012-1",
+      "src": "./flatcraft-icon-v2.png?v=20261012-2",
       "sizes": "180x180",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "any maskable"
     }
   ]
 }
