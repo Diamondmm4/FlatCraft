@@ -66,7 +66,7 @@ export function installPlayerCosmetics(renderer){
   c.save();c.translate(pt.x,pt.y);if(p.invuln>0&&Math.floor(g.elapsed*14)%2)c.globalAlpha=.6;const u=s/16;c.scale(p.facing*u,u);c.imageSmoothingEnabled=false;
   if(swimming){
    const verticalTilt=Math.max(-.16,Math.min(.16,p.vy*.045));
-   c.translate(0,14);c.rotate(-Math.PI/2+verticalTilt);c.translate(0,-14);
+   c.translate(0,14);c.rotate(Math.PI/2-verticalTilt);c.translate(0,-14);
   }else{
    c.fillStyle='rgba(6,14,21,.25)';c.beginPath();c.ellipse(0,28,6,1.5,0,0,Math.PI*2);c.fill();
   }
