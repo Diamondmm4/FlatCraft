@@ -10,10 +10,16 @@
   "theme_color": "#14262b",
   "icons": [
     {
-      "src": "./icon.PNG",
+      "src": "./dock-icon.svg?v=20261012-4",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icon.PNG?v=20261012-4",
       "sizes": "180x180",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ]
 }
