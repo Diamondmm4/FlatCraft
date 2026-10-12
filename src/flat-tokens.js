@@ -47,11 +47,9 @@ function tick(){
  saveRewards(false);updateUI();
 }
 
-function open(){
- window.FlatCraftCosmetics?.close?.();ensureScreen();document.getElementById('token-center').hidden=false;document.body.classList.add('shop-open');updateUI();
-}
+function open(){window.FlatCraftCosmetics?.close?.();ensureScreen();document.getElementById('token-center').hidden=false;document.body.classList.add('shop-open');updateUI();}
 function close(){const el=document.getElementById('token-center');if(el)el.hidden=true;if(document.getElementById('cosmetic-shop')?.hidden!==false)document.body.classList.remove('shop-open');}
-function claim(){if(rewards.claimable<=0)return;const amount=rewards.claimable;rewards.claimable=0;cosmetics.addTokens(amount);saveRewards(true);updateUI();}
+function claim(){if(rewards.claimable<=0)return;const amount=rewards.claimable;rewards.claimable=0;saveRewards(true);cosmetics.addTokens(amount);updateUI();}
 
 document.addEventListener('click',e=>{
  if(e.target.closest('[data-flatcraft-get-more]')){e.preventDefault();open();return;}
@@ -59,9 +57,9 @@ document.addEventListener('click',e=>{
  if(e.target.id==='token-center')close();
 });
 window.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.getElementById('token-center')?.hidden)close();});
-window.addEventListener('flatcraft-tokens-changed',()=>{rewards={...cosmetics.rewards};updateUI();});
+window.addEventListener('flatcraft-tokens-changed',updateUI);
 window.addEventListener('pagehide',()=>saveRewards(true));
-document.addEventListener('visibilitychange',()=>{if(!document.hidden){last=performance.now();}saveRewards(true);});
+document.addEventListener('visibilitychange',()=>saveRewards(true));
 
 ensureHeader();ensureScreen();updateUI();
 setInterval(tick,250);
