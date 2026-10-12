@@ -14,7 +14,7 @@ const fmt=s=>{s=Math.max(0,Math.ceil(s));const m=Math.floor(s/60),sec=s%60;retur
 
 function saveRewards(force=false){
  const now=performance.now();
- if(force||now-lastSaved>5000){lastSaved=now;cosmetics.setRewards(rewards);}
+ if(force||now-lastSaved>30000){lastSaved=now;cosmetics.setRewards(rewards);}
 }
 
 function ensureHeader(){
