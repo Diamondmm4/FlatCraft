@@ -1,5 +1,6 @@
 const DEFAULTS={
  hair:{color:'#4b3428',shape:'crop'},
+ headgear:{gear:'none',color:'#73817b'},
  skin:{color:'#c68a62'},
  shirt:{color:'#55715a',accent:'#3f5948'},
  pants:{color:'#4c6577',accent:'#344957'}
@@ -10,9 +11,12 @@ function getLook(){
  if(!cosmetics)return DEFAULTS;
  const equipped=cosmetics.equipped||{};
  const catalog=cosmetics.catalog||{};
+ const head=catalog.head||catalog.hair||[];
  const find=(group,id)=>(catalog[group]||[]).find(x=>x.id===id);
+ const findHead=id=>head.find(x=>x.id===id);
  return {
-  hair:find('hair',equipped.hair)||DEFAULTS.hair,
+  hair:findHead(equipped.hair)||DEFAULTS.hair,
+  headgear:findHead(equipped.headgear)||DEFAULTS.headgear,
   skin:find('skin',equipped.skin)||DEFAULTS.skin,
   shirt:find('shirt',equipped.shirt)||DEFAULTS.shirt,
   pants:find('pants',equipped.pants)||DEFAULTS.pants
@@ -35,6 +39,27 @@ function drawHair(c,hair){
  if(shape==='long'){
   c.fillRect(-4,-2,8,3);c.fillRect(-5,0,2,7);c.fillRect(3,0,2,7);return;
  }
+ if(shape==='longwave'){
+  c.fillRect(-4,-2,8,3);c.fillRect(-5,0,2,9);c.fillRect(3,0,2,9);c.fillRect(-6,5,2,4);c.fillRect(4,5,2,4);return;
+ }
+ if(shape==='longcurl'){
+  c.fillRect(-4,-2,8,3);for(const [x,y] of [[-5,0],[3,0],[-6,3],[4,3],[-5,6],[3,6],[-6,9],[4,9]])c.fillRect(x,y,2,3);return;
+ }
+ if(shape==='bob'){
+  c.fillRect(-4,-2,8,3);c.fillRect(-5,0,2,6);c.fillRect(3,0,2,6);c.fillRect(-4,4,8,2);return;
+ }
+ if(shape==='ponytail'||shape==='lowpony'){
+  c.fillRect(-4,-2,8,3);c.fillRect(-5,0,2,3);c.fillRect(3,0,2,3);const y=shape==='ponytail'?0:3;c.fillRect(4,y,3,2);c.fillRect(5,y+2,2,7);return;
+ }
+ if(shape==='twinbraid'){
+  c.fillRect(-4,-2,8,3);c.fillRect(-5,0,2,4);c.fillRect(3,0,2,4);c.fillRect(-6,4,2,8);c.fillRect(4,4,2,8);return;
+ }
+ if(shape==='sidebraid'){
+  c.fillRect(-4,-2,8,3);c.fillRect(-5,0,2,4);c.fillRect(3,0,2,4);c.fillRect(4,3,2,10);return;
+ }
+ if(shape==='bun'){
+  c.fillRect(-4,-2,8,3);c.fillRect(-5,0,2,3);c.fillRect(3,0,2,3);c.fillRect(-2,-5,4,4);return;
+ }
  if(shape==='braid'){
   c.fillRect(-4,-2,8,3);c.fillRect(-5,0,2,4);c.fillRect(3,0,2,4);c.fillRect(-5,4,1.5,5);c.fillRect(3.5,4,1.5,5);return;
  }
@@ -53,6 +78,24 @@ function drawHair(c,hair){
  c.fillRect(-4,-2,8,3);c.fillRect(-5,0,2,3);
 }
 
+function drawHeadgear(c,gear,helmet){
+ if(helmet||!gear||gear.gear==='none')return;
+ const color=gear.color||DEFAULTS.headgear.color,type=gear.gear;c.fillStyle=color;
+ if(type==='cap'){c.fillRect(-5,-3,10,3);c.fillRect(3,0,4,1.5);return;}
+ if(type==='beanie'){c.fillRect(-5,-4,10,4);c.fillRect(-4,-5,8,2);return;}
+ if(type==='bucket'){c.fillRect(-6,-3,12,2);c.fillRect(-5,-5,10,3);return;}
+ if(type==='headband'){c.fillRect(-5,0,10,1.5);return;}
+ if(type==='bandana'){c.fillRect(-5,0,10,1.5);c.fillRect(4,1,3,1.5);return;}
+ if(type==='cowboy'){c.fillRect(-7,-4,14,1.5);c.fillRect(-4,-7,8,4);return;}
+ if(type==='explorer'){c.fillRect(-5,-4,10,4);c.fillRect(3,-1,4,1.5);return;}
+ if(type==='flowers'){c.fillRect(-5,-1,10,1);c.fillStyle='#d6aa75';c.fillRect(-4,-2,2,2);c.fillStyle='#d4c57d';c.fillRect(-1,-3,2,2);c.fillStyle='#d7a7b6';c.fillRect(2,-2,2,2);return;}
+ if(type==='crown'){c.fillRect(-5,-2,10,3);c.fillRect(-5,-5,2,3);c.fillRect(-1,-6,2,4);c.fillRect(3,-5,2,3);return;}
+}
+
+function drawScarf(c,gear,helmet){
+ if(helmet||gear?.gear!=='scarf')return;c.fillStyle=gear.color||DEFAULTS.headgear.color;c.fillRect(-4,7,8,2);c.fillRect(3,8,2,6);
+}
+
 export function installPlayerCosmetics(renderer){
  if(!renderer||renderer.__cosmeticsDrawPlayerInstalled)return !!renderer;
  renderer.__cosmeticsDrawPlayerInstalled=true;
@@ -64,21 +107,15 @@ export function installPlayerCosmetics(renderer){
   const walk=swimming?swimCycle*.46:(p.grounded?Math.sin(p.walk*3.7)*.28:Math.sin(g.elapsed*2)*.07);
   const skin=look.skin.color||DEFAULTS.skin.color,shirt=look.shirt.color||DEFAULTS.shirt.color,shirt2=look.shirt.accent||shade(shirt,-.18),pants=look.pants.color||DEFAULTS.pants.color,pants2=look.pants.accent||shade(pants,-.18);
   c.save();c.translate(pt.x,pt.y);if(p.invuln>0&&Math.floor(g.elapsed*14)%2)c.globalAlpha=.6;const u=s/16;c.scale(p.facing*u,u);c.imageSmoothingEnabled=false;
-  if(swimming){
-   const verticalTilt=Math.max(-.16,Math.min(.16,p.vy*.045));
-   c.translate(0,14);c.rotate(Math.PI/2-verticalTilt);c.translate(0,-14);
-  }else{
-   c.fillStyle='rgba(6,14,21,.25)';c.beginPath();c.ellipse(0,28,6,1.5,0,0,Math.PI*2);c.fill();
-  }
-  const chestArmor=g.armor[1]?.id,coat=chestArmor?chestArmor.startsWith('diamond')?'#74bec0':chestArmor.startsWith('iron')?'#b4c4c3':chestArmor.startsWith('gold')?'#d6b267':'#645863':shirt;
-  const leg=(x,a,back)=>{c.save();c.translate(x,17);c.rotate(a);c.fillStyle=back?shade(pants,-.18):pants;c.fillRect(-2,0,4,10);c.fillStyle=g.armor[3]?'#98aaa9':pants2;c.fillRect(-2,8,5,3);c.restore();};
-  const legKick=swimming?walk*.9:walk;leg(-2.5,legKick,true);leg(2,-legKick,false);
+  if(swimming){const verticalTilt=Math.max(-.16,Math.min(.16,p.vy*.045));c.translate(0,14);c.rotate(Math.PI/2-verticalTilt);c.translate(0,-14);}else{c.fillStyle='rgba(6,14,21,.25)';c.beginPath();c.ellipse(0,28,6,1.5,0,0,Math.PI*2);c.fill();}
+  const helmet=g.armor[0]?.id,chestArmor=g.armor[1]?.id,coat=chestArmor?chestArmor.startsWith('diamond')?'#74bec0':chestArmor.startsWith('iron')?'#b4c4c3':chestArmor.startsWith('gold')?'#d6b267':'#645863':shirt;
+  const leg=(x,a,back)=>{c.save();c.translate(x,17);c.rotate(a);c.fillStyle=back?shade(pants,-.18):pants;c.fillRect(-2,0,4,10);c.fillStyle=g.armor[3]?'#98aaa9':pants2;c.fillRect(-2,8,5,3);c.restore();};const legKick=swimming?walk*.9:walk;leg(-2.5,legKick,true);leg(2,-legKick,false);
   c.save();c.translate(-4,10);c.rotate(swimming?-swimCycle*.72:0);c.fillStyle=shirt2;c.fillRect(-2,-1,3,9);c.fillStyle=skin;c.fillRect(-2,4,2,4);c.restore();
-  c.fillStyle=coat;c.fillRect(-4,8,8,11);c.fillStyle=chestArmor?'#adc6b2':shirt2;c.fillRect(-3,8,6,2);c.fillStyle=chestArmor?'#507a7e':pants2;c.fillRect(-4,16,8,3);c.fillStyle=chestArmor?'#d0b884':shade(pants2,.14);c.fillRect(-4,18,8,1);c.fillStyle=chestArmor?'#7d6951':shirt2;c.fillRect(0,9,2,10);
+  c.fillStyle=coat;c.fillRect(-4,8,8,11);c.fillStyle=chestArmor?'#adc6b2':shirt2;c.fillRect(-3,8,6,2);c.fillStyle=chestArmor?'#507a7e':pants2;c.fillRect(-4,16,8,3);c.fillStyle=chestArmor?'#d0b884':shade(pants2,.14);c.fillRect(-4,18,8,1);c.fillStyle=chestArmor?'#7d6951':shirt2;c.fillRect(0,9,2,10);drawScarf(c,look.headgear,helmet);
   const swing=this.reducedMotion?0:swimming?swimCycle*.72:g.mine?Math.sin(g.elapsed*17)*.7:g.attackTimer>.18?-1.2:walk*.5;
   c.save();c.translate(3,10);c.rotate(swing);c.fillStyle=coat;c.fillRect(-1,0,4,6);c.fillStyle=skin;c.fillRect(-1,5,4,4);const held=g.selectedStack();if(held){c.save();c.translate(3,7);c.rotate(-.5);c.drawImage(this.art.item(held.id),-3,-8,12,12);c.restore();}c.restore();
-  c.fillStyle=shade(skin,-.04);c.fillRect(-4,0,8,8);c.fillStyle=shade(skin,.10);c.fillRect(0,2,4,5);drawHair(c,look.hair);c.fillStyle='#243033';c.fillRect(2,3,1.5,1.5);c.fillStyle=shade(skin,-.12);c.fillRect(2,6,2,1);
-  if(g.armor[0]){const id=g.armor[0].id;c.fillStyle=id.startsWith('diamond')?'#84cdcc':id.startsWith('gold')?'#e2c274':'#becdcb';c.fillRect(-5,-2,10,4);c.fillRect(-5,2,2,3);}
+  c.fillStyle=shade(skin,-.04);c.fillRect(-4,0,8,8);c.fillStyle=shade(skin,.10);c.fillRect(0,2,4,5);drawHair(c,look.hair);drawHeadgear(c,look.headgear,helmet);c.fillStyle='#243033';c.fillRect(2,3,1.5,1.5);c.fillStyle=shade(skin,-.12);c.fillRect(2,6,2,1);
+  if(helmet){c.fillStyle=helmet.startsWith('diamond')?'#84cdcc':helmet.startsWith('gold')?'#e2c274':'#becdcb';c.fillRect(-5,-2,10,4);c.fillRect(-5,2,2,3);}
   if(p.blocking){c.fillStyle='#977757';c.fillRect(4,9,5,10);c.fillStyle='#bcc8bf';c.fillRect(5,9,1,10);}
   c.restore();
  };
