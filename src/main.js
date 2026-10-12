@@ -7,7 +7,7 @@ import {UI} from './ui.js';
 import './inventory-fixes.js?v=20261011-1';
 import {Saves} from './storage.js?v=20261011-2';
 import {AudioEngine} from './audio.js';
-import {installPlayerCosmetics} from './player-cosmetics.js?v=20261011-4';
+import {installPlayerCosmetics} from './player-cosmetics.js?v=20261011-5';
 const canvas=document.getElementById('world'),renderer=new Renderer(canvas),audio=new AudioEngine(),saves=new Saves();
 installPlayerCosmetics(renderer);
 const input={left:false,right:false,up:false,down:false,jump:false,sprint:false,mine:false,use:false},keys=new Set();let ui,game,last=performance.now(),accumulator=0,demo,mouse={x:innerWidth*.6,y:innerHeight*.5},lastSpace=0;
