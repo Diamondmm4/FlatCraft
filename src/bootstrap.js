@@ -7,4 +7,4 @@ await import('./swimming-polish.js?v=20261011-1');
 await import('./main.js?v=20261011-7');
 await import('./shop-loader.js?v=20261011-10');
 await import('./cosmetics-render-refresh.js?v=20261011-1');
-await import('./flat-tokens.js?v=20261011-2');
+await import('./flat-tokens.js?v=20261011-3');
