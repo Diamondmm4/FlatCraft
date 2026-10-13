@@ -4,6 +4,7 @@ await import('./passive-animal-movement.js?v=20261011-2');
 await import('./field-guide-label-fix.js?v=20261011-1');
 await import('./fluid-physics.js?v=20261011-1');
 await import('./swimming-polish.js?v=20261011-1');
+await import('./underground-progression.js?v=20261012-1');
 await import('./main.js?v=20261011-7');
 await import('./shop-loader.js?v=20261011-10');
 await import('./cosmetics-render-refresh.js?v=20261011-1');
